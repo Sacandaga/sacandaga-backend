@@ -1,0 +1,40 @@
+# Git version control
+.git/
+.gitignore
+
+# Python bytecode and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+
+# IDE/Editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+calendar_events.db
+*.db-journal
+
+# Test and coverage files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# README and other documentation not needed in the image
+README.md
+
+# Local development files or logs
+*.log

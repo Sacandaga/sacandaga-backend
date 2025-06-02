@@ -1,0 +1,17 @@
+{
+  "editor.detectIndentation": false,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": false,
+  "files.insertFinalNewline": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  "[json]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}
