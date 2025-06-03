@@ -164,12 +164,20 @@ def validate_bearer_token(f: Callable[..., Any]):
 # --- API Endpoints ---
 
 @app.route('/', methods=['GET'])
-@validate_bearer_token
 def root():
     """Root route to test API availability."""
     try:
-        message = "Welcome to the Sacandaga Calendar Backend API!"
-        return jsonify(message), 200
+        return jsonify('Welcome to the Sacandaga Calendar Backend API!'), 200
+    except Exception as e:
+        logger.error(f"Error in root route: {e}", exc_info=True)
+        return jsonify({"error": "An internal server error occurred"}), 500
+    
+@app.route('/login', methods=['POST'])
+@validate_bearer_token
+def login():
+    """Root route to test API availability."""
+    try:
+        return jsonify('Bearer auth token is valid!'), 200
     except Exception as e:
         logger.error(f"Error in root route: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
@@ -209,6 +217,7 @@ def get_event_by_id(event_id: str):
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event', methods=['POST'])
+@validate_bearer_token
 def create_event():
     """
     Creates a new event.
@@ -250,6 +259,7 @@ def create_event():
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['PATCH'])
+@validate_bearer_token
 def update_event(event_id: str):
     """
     Updates an existing event.
@@ -311,6 +321,7 @@ def update_event(event_id: str):
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['DELETE'])
+@validate_bearer_token
 def delete_event(event_id: str):
     """Deletes an event by its ID."""
     try:
