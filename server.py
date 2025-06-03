@@ -154,7 +154,7 @@ def validate_bearer_token(f: Callable[..., Any]):
         if len(parts) != 2 or parts[0].lower() != 'bearer':
             return jsonify({"error": "Invalid authorization header format"}), 401
             
-        token = parts[1]
+        token = parts[1].lower()
         if token != BEARER_TOKEN:
             return jsonify({"error": "Invalid bearer token"}), 401
             
