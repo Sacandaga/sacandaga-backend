@@ -3,7 +3,7 @@ import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-APP_NAME = "Sacandaga Calendar Backend"
+APP_NAME = 'Sacandaga Calendar Backend'
 
 # --- Database Setup ---
 DB_NAME = 'calendar_events.db'
@@ -45,7 +45,7 @@ def init_db():
                 "title": "Michael & Katie",
                 "start": "2025-07-25",
                 "end": "2025-08-10",
-                "background_color": "#A0522D",
+                "background_color": "#388E3C",
                 "description": None
             },
             {
@@ -269,4 +269,4 @@ def delete_event(event_id):
 # --- Main Execution ---
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, port=5000) # Listens on http://localhost:5000
+    app.run(debug=False, port=5000) # Listens on http://localhost:5000
