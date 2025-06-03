@@ -19,9 +19,9 @@ IS_PROD = APP_ENV == 'production'
 
 APP_NAME = 'Sacandaga Calendar Backend'
 
-CLIENT_URL = 'https://sacandaga.fly.dev'
+FRONTEND_URL = 'https://sacandaga.fly.dev'
 
-ORIGINS = [CLIENT_URL] if IS_PROD else ['*']
+ORIGINS = [FRONTEND_URL] if IS_PROD else ['*']
 
 BEARER_TOKEN = os.environ.get('BEARER_TOKEN', None)
 
@@ -32,10 +32,10 @@ logger.info(f"Starting server in {'production' if IS_PROD else 'development'} mo
 
 # --- Database Setup ---
 
-# if IS_PROD:
-#     DB_NAME = os.path.join('/app/db', 'calendar_events.db')
-# else:
-DB_NAME = 'calendar_events.db'
+if IS_PROD:
+    DB_NAME = os.path.join('/app/db', 'calendar_events.db')
+else:
+    DB_NAME = 'calendar_events.db'
 
 def get_db_connection():
     """Establishes a connection to the SQLite database."""
