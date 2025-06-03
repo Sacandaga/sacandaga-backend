@@ -26,7 +26,11 @@ logger = logging.getLogger(__name__)
 logger.info(f"Starting {APP_NAME} in {APP_ENV} mode...")
 
 # --- Database Setup ---
-DB_NAME = 'calendar_events.db'
+
+if IS_PROD:
+    DB_NAME = os.path.join('/app/db', 'calendar_events.db')
+else:
+    DB_NAME = 'calendar_events.db'
 
 def get_db_connection():
     """Establishes a connection to the SQLite database."""

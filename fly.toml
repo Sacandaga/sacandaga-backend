@@ -26,3 +26,7 @@ primary_region = "bos"
   memory = '256mb'
   cpu_kind = 'shared'
   cpus = 1
+
+[mounts]
+  source = "db_volume"
+  destination = "/app/db"
