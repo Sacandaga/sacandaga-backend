@@ -1,17 +1,29 @@
 import logging
 import sqlite3
 import uuid
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from typing import Optional
+from dotenv import load_dotenv
+
+# --- Configuration ---
+
+load_dotenv()
+
+APP_ENV = os.environ.get('APP_ENV', 'development').lower()
+IS_PROD = APP_ENV == 'production'
 
 APP_NAME = 'Sacandaga Calendar Backend'
 
 CLIENT_URL = 'https://sacandaga.fly.dev'
 
-# Configure basic logging
+ORIGINS = [CLIENT_URL] if IS_PROD else ['*']
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+logger.info(f"Starting {APP_NAME} in {APP_ENV} mode...")
 
 # --- Database Setup ---
 DB_NAME = 'calendar_events.db'
@@ -93,8 +105,8 @@ def init_db():
 
 # --- Flask App Setup ---
 app = Flask(APP_NAME)
-CORS(app, 
-    origins=[CLIENT_URL],
+CORS(app,
+    origins=ORIGINS,
     methods=['GET', 'POST', 'PATCH', 'DELETE'],
     supports_credentials=False)
 
@@ -283,4 +295,4 @@ def delete_event(event_id: str):
 
 # --- Main Execution ---
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=not IS_PROD, port=5000)
