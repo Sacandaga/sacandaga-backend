@@ -7,6 +7,8 @@ from typing import Optional
 
 APP_NAME = 'Sacandaga Calendar Backend'
 
+CLIENT_URL = 'https://sacandaga.fly.dev'
+
 # Configure basic logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -91,7 +93,10 @@ def init_db():
 
 # --- Flask App Setup ---
 app = Flask(APP_NAME)
-CORS(app) # Enable CORS for all routes, allowing requests from your web app
+CORS(app, 
+    origins=[CLIENT_URL],
+    methods=['GET', 'POST', 'PATCH', 'DELETE'],
+    supports_credentials=False)
 
 # Initialize the database when the application module is loaded.
 # This ensures it runs when Gunicorn starts, before any requests are handled.
