@@ -175,7 +175,7 @@ def root():
 @app.route('/login', methods=['POST'])
 @validate_bearer_token
 def login():
-    """Root route to test API availability."""
+    """Test the validity of the Bearer auth token required to access secured routes."""
     try:
         return jsonify('Bearer auth token is valid!'), 200
     except Exception as e:
