@@ -57,7 +57,9 @@ def init_db():
     
     # Check if the events table is empty
     cursor.execute("SELECT COUNT(*) FROM events")
-    if cursor.fetchone()[0] == 0:
+    if cursor.fetchone()[0] > 0:
+        logger.info("Events table already contains data, skipping initial insert.")
+    else:
         # Insert initial data if table is empty
         initial_events = [
             {
