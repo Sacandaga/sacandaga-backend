@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+PORT = int(os.environ.get('PORT', '5000'))
+
 APP_ENV = os.environ.get('APP_ENV', 'development').lower()
 IS_PROD = APP_ENV == 'production'
 
@@ -299,4 +301,4 @@ def delete_event(event_id: str):
 
 # --- Main Execution ---
 if __name__ == '__main__':
-    app.run(debug=not IS_PROD, port=5000)
+    app.run(debug=not IS_PROD, port=PORT)
