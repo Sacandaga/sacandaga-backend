@@ -1,9 +1,15 @@
+import logging
 import sqlite3
 import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 APP_NAME = 'Sacandaga Calendar Backend'
+
+# Configure basic logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 # --- Database Setup ---
 DB_NAME = 'calendar_events.db'
@@ -63,7 +69,7 @@ def init_db():
                 "description": None
             }
         ]
-        
+
         # Insert each event with a unique UUID
         for event in initial_events:
             event_id = str(uuid.uuid4())
@@ -78,14 +84,19 @@ def init_db():
                 event["end"],
                 event.get("description")
             ))
-            print(f"Added initial event: {event['title']}")
+            logger.info(f"Added initial event: {event['title']}") # Use logger
     
     conn.commit()
     conn.close()
+    logger.info("Database initialized successfully.")
 
 # --- Flask App Setup ---
 app = Flask(APP_NAME)
 CORS(app) # Enable CORS for all routes, allowing requests from your web app
+
+# Initialize the database when the application module is loaded.
+# This ensures it runs when Gunicorn starts, before any requests are handled.
+init_db()
 
 # --- Helper Functions ---
 def event_to_dict(event_row):
@@ -103,7 +114,7 @@ def root():
         message = "Welcome to the Sacandaga Calendar Backend API!"
         return jsonify(message), 200
     except Exception as e:
-        print(f"Error fetching all events: {e}")
+        logger.error(f"Error in root route: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
     
 @app.route('/event', methods=['GET'])
@@ -119,7 +130,7 @@ def get_all_events():
         events = [event_to_dict(row) for row in events_rows]
         return jsonify(events), 200
     except Exception as e:
-        print(f"Error fetching all events: {e}")
+        logger.error(f"Error fetching all events: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['GET'])
@@ -137,7 +148,7 @@ def get_event_by_id(event_id):
 
         return jsonify(event_to_dict(event_row)), 200
     except Exception as e:
-        print(f"Error fetching event by ID {event_id}: {e}")
+        logger.error(f"Error fetching event by ID {event_id}: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event', methods=['POST'])
@@ -178,7 +189,7 @@ def create_event():
 
         return jsonify(new_event), 201
     except Exception as e:
-        print(f"Error creating event: {e}")
+        logger.error(f"Error creating event: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['PATCH'])
@@ -239,7 +250,7 @@ def update_event(event_id):
 
         return jsonify(event_to_dict(updated_event_row)), 200
     except Exception as e:
-        print(f"Error updating event {event_id}: {e}")
+        logger.error(f"Error updating event {event_id}: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['DELETE'])
@@ -263,10 +274,9 @@ def delete_event(event_id):
 
         return jsonify({"message": "Event deleted successfully"}), 200
     except Exception as e:
-        print(f"Error deleting event {event_id}: {e}")
+        logger.error(f"Error deleting event {event_id}: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred"}), 500
 
 # --- Main Execution ---
 if __name__ == '__main__':
-    init_db()
-    app.run(debug=True, port=5000) # Listens on http://localhost:5000
+    app.run(debug=True, port=5000)

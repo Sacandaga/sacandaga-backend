@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
-# Also install Gunicorn, a Python WSGI HTTP Server for UNIX to use in production only
+# Also install Gunicorn, a Python WSGI HTTP Server for UNIX
 RUN pip install --no-cache-dir -r requirements.txt \
 	&& pip install --no-cache-dir gunicorn
 
@@ -20,7 +20,4 @@ COPY . .
 EXPOSE 5000
 
 # Run Gunicorn as the production server
-# CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5000", "server:app"]
-# For better configurability, you can adjust the number of workers.
-# A common recommendation is (2 * number_of_cores) + 1. Start with 2-4 for simple apps.
-CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5000", "server:app"]
+CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:5000", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-", "server:app"]
