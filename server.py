@@ -105,6 +105,40 @@ def root():
     except Exception as e:
         print(f"Error fetching all events: {e}")
         return jsonify({"error": "An internal server error occurred"}), 500
+    
+@app.route('/event', methods=['GET'])
+def get_all_events():
+    """Returns a list of all events."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM events")
+        events_rows = cursor.fetchall()
+        conn.close()
+
+        events = [event_to_dict(row) for row in events_rows]
+        return jsonify(events), 200
+    except Exception as e:
+        print(f"Error fetching all events: {e}")
+        return jsonify({"error": "An internal server error occurred"}), 500
+
+@app.route('/event/<string:event_id>', methods=['GET'])
+def get_event_by_id(event_id):
+    """Returns a single event by its ID."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM events WHERE id = ?", (event_id,))
+        event_row = cursor.fetchone()
+        conn.close()
+
+        if event_row is None:
+            return jsonify({"error": "Event not found"}), 404
+
+        return jsonify(event_to_dict(event_row)), 200
+    except Exception as e:
+        print(f"Error fetching event by ID {event_id}: {e}")
+        return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event', methods=['POST'])
 def create_event():
@@ -145,40 +179,6 @@ def create_event():
         return jsonify(new_event), 201
     except Exception as e:
         print(f"Error creating event: {e}")
-        return jsonify({"error": "An internal server error occurred"}), 500
-
-@app.route('/event', methods=['GET'])
-def get_all_events():
-    """Returns a list of all events."""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM events")
-        events_rows = cursor.fetchall()
-        conn.close()
-
-        events = [event_to_dict(row) for row in events_rows]
-        return jsonify(events), 200
-    except Exception as e:
-        print(f"Error fetching all events: {e}")
-        return jsonify({"error": "An internal server error occurred"}), 500
-
-@app.route('/event/<string:event_id>', methods=['GET'])
-def get_event_by_id(event_id):
-    """Returns a single event by its ID."""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM events WHERE id = ?", (event_id,))
-        event_row = cursor.fetchone()
-        conn.close()
-
-        if event_row is None:
-            return jsonify({"error": "Event not found"}), 404
-
-        return jsonify(event_to_dict(event_row)), 200
-    except Exception as e:
-        print(f"Error fetching event by ID {event_id}: {e}")
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['PATCH'])
@@ -269,4 +269,4 @@ def delete_event(event_id):
 # --- Main Execution ---
 if __name__ == '__main__':
     init_db()
-    app.run(debug=False, port=5000) # Listens on http://localhost:5000
+    app.run(debug=True, port=5000) # Listens on http://localhost:5000
