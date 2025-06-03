@@ -2,9 +2,10 @@ import logging
 import sqlite3
 import uuid
 import os
+import functools
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from typing import Optional
+from typing import Optional, Callable, Any
 from dotenv import load_dotenv
 
 # --- Configuration ---
@@ -22,17 +23,19 @@ CLIENT_URL = 'https://sacandaga.fly.dev'
 
 ORIGINS = [CLIENT_URL] if IS_PROD else ['*']
 
+BEARER_TOKEN = os.environ.get('BEARER_TOKEN', None)
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-logger.info(f"Starting {APP_NAME} in {APP_ENV} mode...")
+logger.info(f"Starting server in {'production' if IS_PROD else 'development'} mode...")
 
 # --- Database Setup ---
 
-if IS_PROD:
-    DB_NAME = os.path.join('/app/db', 'calendar_events.db')
-else:
-    DB_NAME = 'calendar_events.db'
+# if IS_PROD:
+#     DB_NAME = os.path.join('/app/db', 'calendar_events.db')
+# else:
+DB_NAME = 'calendar_events.db'
 
 def get_db_connection():
     """Establishes a connection to the SQLite database."""
@@ -60,7 +63,7 @@ def init_db():
     if cursor.fetchone()[0] > 0:
         logger.info("Events table already contains data, skipping initial insert.")
     else:
-        # Insert initial data if table is empty
+        logger.info("Events table is empty, inserting initial data...")
         initial_events = [
             {
                 "title": "Opening Weekend",
@@ -129,9 +132,39 @@ def event_to_dict(event_row: Optional[sqlite3.Row]):
         return None
     return dict(event_row)
 
+def validate_bearer_token(f: Callable[..., Any]):
+    """Decorator to validate Bearer token for secured endpoints."""
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Skip auth in development mode
+        if not IS_PROD:
+            logger.debug("Running in development mode, auth bypassed")
+            return f(*args, **kwargs)
+        
+        # Continue with auth in production mode
+        if not BEARER_TOKEN:
+            logger.warning("BEARER_TOKEN not configured, auth disabled")
+            return f(*args, **kwargs)
+            
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({"error": "Authorization header missing"}), 401
+            
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            return jsonify({"error": "Invalid authorization header format"}), 401
+            
+        token = parts[1]
+        if token != BEARER_TOKEN:
+            return jsonify({"error": "Invalid bearer token"}), 401
+            
+        return f(*args, **kwargs)
+    return decorated_function
+
 # --- API Endpoints ---
 
 @app.route('/', methods=['GET'])
+@validate_bearer_token
 def root():
     """Root route to test API availability."""
     try:
@@ -303,4 +336,5 @@ def delete_event(event_id: str):
 
 # --- Main Execution ---
 if __name__ == '__main__':
+    logger.info(f"Server listening on port {PORT}...")
     app.run(debug=not IS_PROD, port=PORT)
