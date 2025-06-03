@@ -38,3 +38,11 @@ README.md
 
 # Local development files or logs
 *.log
+
+# Additional repo files
+.github/
+.env
+.env.example
+.dockerignore
+Dockerfile
+fly.toml
