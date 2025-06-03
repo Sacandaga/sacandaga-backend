@@ -3,13 +3,13 @@ import sqlite3
 import uuid
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from typing import Optional
 
 APP_NAME = 'Sacandaga Calendar Backend'
 
 # Configure basic logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
 
 # --- Database Setup ---
 DB_NAME = 'calendar_events.db'
@@ -84,7 +84,6 @@ def init_db():
                 event["end"],
                 event.get("description")
             ))
-            logger.info(f"Added initial event: {event['title']}") # Use logger
     
     conn.commit()
     conn.close()
@@ -99,7 +98,7 @@ CORS(app) # Enable CORS for all routes, allowing requests from your web app
 init_db()
 
 # --- Helper Functions ---
-def event_to_dict(event_row):
+def event_to_dict(event_row: Optional[sqlite3.Row]):
     """Converts a database row (sqlite3.Row) to a dictionary."""
     if event_row is None:
         return None
@@ -134,7 +133,7 @@ def get_all_events():
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['GET'])
-def get_event_by_id(event_id):
+def get_event_by_id(event_id: str):
     """Returns a single event by its ID."""
     try:
         conn = get_db_connection()
@@ -193,7 +192,7 @@ def create_event():
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['PATCH'])
-def update_event(event_id):
+def update_event(event_id: str):
     """
     Updates an existing event.
     Expects a JSON body with fields to update.
@@ -254,7 +253,7 @@ def update_event(event_id):
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/event/<string:event_id>', methods=['DELETE'])
-def delete_event(event_id):
+def delete_event(event_id: str):
     """Deletes an event by its ID."""
     try:
         conn = get_db_connection()
