@@ -138,6 +138,11 @@ init_db()
 # --- Helper Functions ---
 
 
+def success_response(data, status_code=200):
+    """Creates a standardized success response tuple for Flask routes."""
+    return jsonify(data), status_code
+
+
 def error_response(
     message="An internal server error occurred",
     status_code=500,
@@ -195,7 +200,9 @@ def event_to_dict(event_row: Optional[sqlite3.Row]):
 def root():
     """Root route to test API availability."""
     try:
-        return jsonify("Welcome to the Sacandaga Calendar Backend API!"), 200
+        return success_response(
+            {"message": "Welcome to the Sacandaga Calendar Backend API!"}
+        )
     except Exception as e:
         return error_response("Error in root route", log_error=e)
 
@@ -205,7 +212,7 @@ def root():
 def login():
     """Test the validity of the Bearer auth token required to access secured routes."""
     try:
-        return jsonify("Bearer auth token is valid!"), 200
+        return success_response({"message": "Bearer auth token is valid!"})
     except Exception as e:
         return error_response(log_error=f"Error in root route: {e}")
 
@@ -221,7 +228,7 @@ def get_all_events():
         conn.close()
 
         events = [event_to_dict(row) for row in events_rows]
-        return jsonify(events), 200
+        return success_response(events)
     except Exception as e:
         return error_response("Error fetching all events", log_error=e)
 
@@ -237,9 +244,11 @@ def get_event_by_id(event_id: str):
         conn.close()
 
         if event_row is None:
-            return jsonify({"error": "Event not found"}), 404
+            return error_response(
+                f"Event with ID {event_id} not found", status_code=404
+            )
 
-        return jsonify(event_to_dict(event_row)), 200
+        return success_response(event_to_dict(event_row))
     except Exception as e:
         return error_response(
             f"Error fetching event by ID {event_id}: {e}", log_error=e
@@ -253,15 +262,14 @@ def create_event():
     try:
         data = request.get_json()
         if not data:
-            return jsonify({"error": "Invalid JSON payload"}), 400
+            return error_response("Invalid JSON body payload", status_code=400)
 
         # Validate required fields
         required_fields = ["title", "background_color", "start", "end"]
         for field in required_fields:
             if field not in data or not data[field]:
-                return (
-                    jsonify({"error": f"Missing or empty required field: {field}"}),
-                    400,
+                return error_response(
+                    f"Missing or empty required field: {field}", status_code=400
                 )
 
         new_event = {
@@ -292,7 +300,7 @@ def create_event():
         conn.commit()
         conn.close()
 
-        return jsonify(new_event), 201
+        return success_response(new_event, 201)
     except Exception as e:
         return error_response(f"Error creating event: {e}", log_error=e)
 
@@ -304,7 +312,7 @@ def update_event(event_id: str):
     try:
         data = request.get_json()
         if not data:
-            return jsonify({"error": "Invalid JSON payload"}), 400
+            return error_response("Invalid JSON body payload", status_code=400)
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -314,7 +322,9 @@ def update_event(event_id: str):
         existing_event = cursor.fetchone()
         if existing_event is None:
             conn.close()
-            return jsonify({"error": "Event not found"}), 404
+            return error_response(
+                f"Event with ID {event_id} not found", status_code=404
+            )
 
         # Build the update query dynamically
         update_fields = []
@@ -338,7 +348,7 @@ def update_event(event_id: str):
 
         if not update_fields:
             conn.close()
-            return jsonify({"error": "No fields to update provided"}), 400
+            return error_response("No fields to update provided", status_code=400)
 
         query = f"UPDATE events SET {', '.join(update_fields)} WHERE id = ?"
         update_values.append(event_id)
@@ -351,7 +361,7 @@ def update_event(event_id: str):
         updated_event_row = cursor.fetchone()
         conn.close()
 
-        return jsonify(event_to_dict(updated_event_row)), 200
+        return success_response(event_to_dict(updated_event_row))
     except Exception as e:
         return error_response(f"Error updating event {event_id}: {e}", log_error=e)
 
@@ -370,13 +380,15 @@ def delete_event(event_id: str):
 
         if not event_exists:
             conn.close()
-            return jsonify({"error": "Event not found"}), 404
+            return error_response(
+                f"Event with ID {event_id} not found", status_code=404
+            )
 
         cursor.execute("DELETE FROM events WHERE id = ?", (event_id,))
         conn.commit()
         conn.close()
 
-        return jsonify({"message": "Event deleted successfully"}), 200
+        return success_response({"message": "Event deleted successfully"})
     except Exception as e:
         return error_response(f"Error deleting event {event_id}: {e}", log_error=e)
 
