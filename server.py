@@ -22,12 +22,64 @@ def init_db():
         CREATE TABLE IF NOT EXISTS events (
             id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
-            backgroundColor TEXT NOT NULL,
+            background_color TEXT NOT NULL,
             start TEXT NOT NULL,
             end TEXT NOT NULL,
             description TEXT
         )
     ''')
+    
+    # Check if the events table is empty
+    cursor.execute("SELECT COUNT(*) FROM events")
+    if cursor.fetchone()[0] == 0:
+        # Insert initial data if table is empty
+        initial_events = [
+            {
+                "title": "Opening Weekend",
+                "start": "2025-07-04",
+                "end": "2025-07-06",
+                "background_color": "#2365A1",
+                "description": "Elaine, Rick, Mark, Danee"
+            },
+            {
+                "title": "Michael & Katie",
+                "start": "2025-07-25",
+                "end": "2025-08-10",
+                "background_color": "#A0522D",
+                "description": None
+            },
+            {
+                "title": "Scott, Doug, Mark, Elaine, Rick",
+                "start": "2025-08-16",
+                "end": "2025-08-23",
+                "background_color": "#7B1FA2",
+                "description": None
+            },
+            {
+                "title": "Chris & Friends",
+                "start": "2025-08-28",
+                "end": "2025-09-02",
+                "background_color": "#A0522D",
+                "description": None
+            }
+        ]
+        
+        # Insert each event with a unique UUID
+        for event in initial_events:
+            event_id = str(uuid.uuid4())
+            cursor.execute('''
+                INSERT INTO events (id, title, background_color, start, end, description)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                event_id,
+                event["title"],
+                event["background_color"],
+                event["start"],
+                event["end"],
+                event.get("description")
+            ))
+            print(f"Added initial event: {event['title']}")
+    
     conn.commit()
     conn.close()
 
@@ -66,7 +118,7 @@ def create_event():
             return jsonify({"error": "Invalid JSON payload"}), 400
 
         # Validate required fields
-        required_fields = ['title', 'backgroundColor', 'start', 'end']
+        required_fields = ['title', 'background_color', 'start', 'end']
         for field in required_fields:
             if field not in data or not data[field]:
                 return jsonify({"error": f"Missing or empty required field: {field}"}), 400
@@ -74,7 +126,7 @@ def create_event():
         new_event = {
             "id": str(uuid.uuid4()),
             "title": data['title'],
-            "backgroundColor": data['backgroundColor'],
+            "background_color": data['background_color'],
             "start": data['start'],
             "end": data['end'],
             "description": data.get('description') # Optional field
@@ -83,9 +135,9 @@ def create_event():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO events (id, title, backgroundColor, start, end, description)
+            INSERT INTO events (id, title, background_color, start, end, description)
             VALUES (?, ?, ?, ?, ?, ?)
-        ''', (new_event['id'], new_event['title'], new_event['backgroundColor'],
+        ''', (new_event['id'], new_event['title'], new_event['background_color'],
               new_event['start'], new_event['end'], new_event['description']))
         conn.commit()
         conn.close()
@@ -157,9 +209,9 @@ def update_event(event_id):
         if 'title' in data:
             update_fields.append("title = ?")
             update_values.append(data['title'])
-        if 'backgroundColor' in data:
-            update_fields.append("backgroundColor = ?")
-            update_values.append(data['backgroundColor'])
+        if 'background_color' in data:
+            update_fields.append("background_color = ?")
+            update_values.append(data['background_color'])
         if 'start' in data:
             update_fields.append("start = ?")
             update_values.append(data['start'])
