@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PORT = int(os.environ.get("PORT", "5000"))
+PORT = int(os.environ.get("PORT", "5001"))
 
 APP_ENV = os.environ.get("APP_ENV", "development").lower()
 IS_PROD = APP_ENV == "production"

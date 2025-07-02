@@ -15,9 +15,9 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Copy your application code
 COPY . .
 
-# Make port 5000 available to the world outside this container
+# Make port 5001 available to the world outside this container
 # Gunicorn will bind to this port
-EXPOSE 5000
+EXPOSE 5001
 
 # Run Gunicorn as the production server
-CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:5000", "--log-level", "info", "--access-logfile", "-", "--error-logfile", "-", "server:app"]
+CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:5001", "--log-level", "info", "--access-logfile", "-", "--error-logfile", "-", "server:app"]

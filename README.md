@@ -17,7 +17,7 @@ Build and run in a Docker container:
 
 ```bash
 docker build -t sacandaga-backend .
-docker run -p 5000:5000 sacandaga-backend
+docker run -p 5001:5001 sacandaga-backend
 ```
 
 Set the environment variable `APP_ENV` to `production` to enforce CORS whitelist policy and disable debug mode:
