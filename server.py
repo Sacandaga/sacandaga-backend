@@ -61,62 +61,6 @@ def init_db():
         )
     """
     )
-
-    # Check if the events table is empty
-    cursor.execute("SELECT COUNT(*) FROM events")
-    if cursor.fetchone()[0] > 0:
-        logger.info("Events table already contains data, skipping initial insert.")
-    else:
-        logger.info("Events table is empty, inserting initial data...")
-        initial_events = [
-            {
-                "title": "Opening Weekend",
-                "start": "2025-07-04",
-                "end": "2025-07-06",
-                "background_color": "#2365A1",
-                "description": "Elaine, Rick, Mark, Danee",
-            },
-            {
-                "title": "Michael & Katie",
-                "start": "2025-07-25",
-                "end": "2025-08-10",
-                "background_color": "#388E3C",
-                "description": None,
-            },
-            {
-                "title": "Scott, Doug, Mark, Elaine, Rick",
-                "start": "2025-08-16",
-                "end": "2025-08-23",
-                "background_color": "#7B1FA2",
-                "description": None,
-            },
-            {
-                "title": "Chris & Friends",
-                "start": "2025-08-28",
-                "end": "2025-09-02",
-                "background_color": "#A0522D",
-                "description": None,
-            },
-        ]
-
-        # Insert each event with a unique UUID
-        for event in initial_events:
-            event_id = str(uuid.uuid4())
-            cursor.execute(
-                """
-                INSERT INTO events (id, title, background_color, start, end, description)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """,
-                (
-                    event_id,
-                    event["title"],
-                    event["background_color"],
-                    event["start"],
-                    event["end"],
-                    event.get("description"),
-                ),
-            )
-
     conn.commit()
     conn.close()
     logger.info("Database initialized successfully.")
